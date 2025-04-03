@@ -2,31 +2,23 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wasm plot</title>
-  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
-  <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
-  <script src="./index.js"></script>
   <main>
-    <h1>Wasm plot</h1>
-    <div id="coord"></div>
-    <canvas id="canvas" width="600" height="400"></canvas>
-    <div id="status">Loading WebAssembly...</div>
+    <h2>Wasm plot</h2>
     <div id="control">
-      <label for="plot-type">Plot</label>
-      <select id="plot-type">
-        <option value="0">Plot 0</option>
-        <option value="1">Plot 1</option>
-      </select>
+      <input type="file" id="file-input" />
+      <div id="message"></div>
+      <pre id="file-content"></pre>
     </div>
+
+    <canvas id="canvas" height="600" width="1000"></canvas>
   </main>
-  <footer>
-    <a href="https://github.com/plotters-rs/plotters-wasm-demo" target="a">Source</a> |
-  </footer>
+
 </body>
 
 </html>

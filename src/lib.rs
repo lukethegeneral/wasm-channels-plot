@@ -1,26 +1,16 @@
+use js_sys::{ArrayBuffer, Uint8Array};
 use wasm_bindgen::prelude::*;
 use web_sys::HtmlCanvasElement;
 
 mod plot;
 
-#[wasm_bindgen]
-extern "C" {
-    pub fn alert(s: &str);
-}
-
-#[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Wasm plot, {}!", name));
-}
-
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+//#[global_allocator]
+//static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 /// Type alias for the result of a drawing function.
 pub type DrawResult<T> = Result<T, Box<dyn std::error::Error>>;
 
-/// Type used on the JS side to convert screen coordinates to chart
-/// coordinates.
+/// Type used on the JS side to convert screen coordinates to chart coordinates.
 #[wasm_bindgen]
 pub struct Chart {
     convert: Box<dyn Fn((i32, i32)) -> Option<(f64, f64)>>,
@@ -37,8 +27,9 @@ pub struct Point {
 impl Chart {
     /// Draw provided function on the canvas element using it's id.
     /// Return `Chart` struct suitable for coordinate conversion.
-    pub fn plot_channels() -> Result<Chart, JsValue> {
-        let map_coord = plot::draw().map_err(|err| err.to_string())?;
+
+    pub fn plot_channels(canvas: HtmlCanvasElement, bytes: Uint8Array) -> Result<Chart, JsValue> {
+        let map_coord = plot::draw(canvas, bytes).map_err(|err| err.to_string())?;
         Ok(Chart {
             convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x.into(), y.into()))),
         })
@@ -51,9 +42,20 @@ impl Chart {
         })
     }
 
-    /// This function can be used to convert screen coordinates to
-    /// chart coordinates.
+    /// This function can be used to convert screen coordinates to chart coordinates.
     pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
         (self.convert)((x, y)).map(|(x, y)| Point { x, y })
     }
+}
+
+#[wasm_bindgen(start)]
+fn start() {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.get_element_by_id("canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement = canvas
+        .dyn_into::<web_sys::HtmlCanvasElement>()
+        .map_err(|_| ())
+        .unwrap();
+
+    //Chart::plot_channels(canvas).unwrap();
 }

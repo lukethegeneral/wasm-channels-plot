@@ -1,29 +1,120 @@
+extern crate wasm_bindgen;
+use std::future::IntoFuture;
+use std::vec;
+
 use crate::DrawResult;
+use js_sys::Error;
+use js_sys::{ArrayBuffer, Uint8Array};
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
-use wasm_bindgen::JsCast;
+use std::env;
+use std::fs;
+use std::fs::File;
+use std::io::Read;
+use std::io::Seek;
+use std::io::SeekFrom;
+use wasm_bindgen::convert::FromWasmAbi;
+use wasm_bindgen::convert::IntoWasmAbi;
+use wasm_bindgen::prelude::*;
+use wasm_bindgen::{JsCast, JsValue};
+use wasmedge_wasi_helper::wasmedge_wasi_helper::_initialize;
 use web_sys::HtmlCanvasElement;
 
-fn read_file(file_name: &str) -> Vec<u16> {
-    let bytes = std::fs::read(file_name).unwrap();
+use js_sys::Object;
 
-    let bytes_converted = bytes
+#[wasm_bindgen]
+extern "C" {
+    pub fn alert(s: &str);
+}
+
+#[wasm_bindgen]
+pub fn greet(text: &str) {
+    alert(&format!("Wasm plot, {}!", text));
+}
+
+#[wasm_bindgen(module = "/src/lib.js")]
+extern "C" {
+    type Buffer;
+
+    #[wasm_bindgen(method, getter)]
+    fn buffer(this: &Buffer) -> ArrayBuffer;
+
+    #[wasm_bindgen(method, getter, js_name = byteOffset)]
+    fn byte_offset(this: &Buffer) -> u32;
+
+    #[wasm_bindgen(method, getter)]
+    fn length(this: &Buffer) -> u32;
+
+    //#[wasm_bindgen(js_name = readFileSync)]
+    //#[wasm_bindgen()]
+    //fn read_file_js(path: &str, options: &Object) -> JsValue;
+
+    fn starting() -> String;
+}
+/*
+#[wasm_bindgen(module = "/src/lib.js")]
+extern "C" {
+    #[wasm_bindgen(catch)]
+    pub fn read_file_js(path: &str) -> Result<String, JsValue>;
+}
+*/
+
+/*
+#[wasm_bindgen]
+extern "C" {
+    type Buffer;
+}
+
+//#[wasm_bindgen(module = "fs")]
+#[wasm_bindgen()]
+extern "C" {
+    #[wasm_bindgen(js_name = readFileSync, catch)]
+    fn read_file_js(path: &str) -> Result<Buffer, JsValue>;
+}
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+macro_rules! console_log {
+    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
+*/
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+
+const FILE_NAME: &str = "../input-data/RPM_DATA.bin";
+
+#[wasm_bindgen]
+pub fn read_file(bytes: Uint8Array) -> Result<Vec<u16>, Error> {
+    // let bytes = std::fs::read(file_name).unwrap();
+    // let bytes = include_bytes!("../input-data/RPM_DATA.bin");
+    // let bytes = vec![12, 45, 78, 32, 22, 12, 44, 55, 66, 77, 88, 99];
+
+    greet(&starting());
+    //greet(&len.to_string());
+
+    let mut bytes_rust = vec![0; bytes.length() as usize];
+    bytes.copy_to(&mut bytes_rust[..]);
+
+    let bytes_converted = bytes_rust
         .chunks_exact(2)
         .map(|w| u16::from_le_bytes([w[0], w[1]]))
         .collect::<Vec<u16>>();
 
-    bytes_converted
+    Ok(bytes_converted)
 }
 
 //pub fn draw(canvas: HtmlCanvasElement) -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
-pub fn draw() -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
-    let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.get_element_by_id("canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas
-        .dyn_into::<web_sys::HtmlCanvasElement>()
-        .map_err(|_| ())
-        .unwrap();
-
+pub fn draw(
+    canvas: HtmlCanvasElement,
+    bytes: Uint8Array,
+) -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
     let context = canvas
         .get_context("2d")
         .unwrap()
@@ -33,21 +124,17 @@ pub fn draw() -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
 
     context.begin_path();
 
-    ////
-
     let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
 
     let root = backend.into_drawing_area();
     root.fill(&YELLOW)?;
 
-    let chart_data = read_file("input-data/RPM_DATA.bin");
-    println!("{:?}", chart_data);
+    let chart_data = read_file(bytes).unwrap();
+    // let chart_data = read_file(vec![12, 34, 22, 12, 45, 32, 11].as_slice()).unwrap();
+    //let chart_data = vec![1234, 2345, 5678, 3271, 8822, 1234];
     let chart_data_len = chart_data.len() / 3;
     let chart_data_min = chart_data.iter().min().unwrap();
     let chart_data_max = chart_data.iter().max().unwrap();
-
-    //let root = BitMapBackend::new("output-data/0.png", (640, 480)).into_drawing_area();
-    //root.fill(&WHITE)?;
 
     let mut chart = ChartBuilder::on(&root)
         .caption("Data channels", ("sans-serif", 50).into_font())
@@ -110,6 +197,8 @@ pub fn draw() -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
         .draw()?;
 
     root.present()?;
+
+    context.stroke();
 
     return Ok(chart.into_coord_trans());
 }

@@ -8,13 +8,6 @@
     "serve": "webpack serve --config webpack.config.js --open",
     "start": "webpack-dev-server"
   },
-  "keywords": [
-    "webassembly",
-    "wasm",
-    "rust",
-    "webpack",
-    "visualization"
-  ],
   "dependencies": {
     "wasm-plot": "file:../pkg"
   },

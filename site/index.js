@@ -1,103 +1,49 @@
-import('./pkg')
+import('../pkg')
 	.catch(console.error);
 
-//import * as wasm from "wasm-plot";
-
-//wasm.greet("WebAssembly with npm");
-
-// If you only use `npm` you can simply
-// import { Chart } from "wasm-demo" and remove `setup` call from `bootstrap.js`.
-import { Chart } from "wasm-plot"
-//import * as wasm from "wasm-plot";
-//class Chart { }
+import { Chart } from '../pkg';
 
 const canvas = document.getElementById("canvas");
-const coord = document.getElementById("coord");
-const plotType = document.getElementById("plot-type");
-const pitch = document.getElementById("pitch");
-const yaw = document.getElementById("yaw");
-const control = document.getElementById("3d-control");
-const status = document.getElementById("status");
+const fileInput = document.getElementById("file-input");
+const fileContentDisplay = document.getElementById("file-content");
+const messageDisplay = document.getElementById("message");
 
-let chart = null;
+fileInput.addEventListener("change", handleFileSelection);
 
-/** Main entry point */
-export function main() {
-	let hash = location.hash;
-	for (var i = 0; i < plotType.options.length; i++) {
-		if (hash == plotType.options[i].value) {
-			plotType.value = hash;
-		}
+function handleFileSelection(event) {
+	const file = event.target.files[0];
+	fileContentDisplay.textContent = ""; // Clear previous file content
+	messageDisplay.textContent = ""; // Clear previous messages
+
+	// Validate file existence and type
+	if (!file) {
+		showMessage("No file selected. Please choose a file.", "error");
+		return;
 	}
-	setupUI();
-	setupCanvas();
-}
-
-/** This function is used in `bootstrap.js` to setup imports. */
-export function setup(WasmChart) {
-	Chart = WasmChart;
-}
-
-/** Add event listeners. */
-function setupUI() {
-	status.innerText = "WebAssembly loaded!";
-	plotType.addEventListener("change", updatePlot);
-	yaw.addEventListener("change", updatePlot);
-	pitch.addEventListener("change", updatePlot);
-	yaw.addEventListener("input", updatePlot);
-	pitch.addEventListener("input", updatePlot);
-	window.addEventListener("resize", setupCanvas);
-	window.addEventListener("mousemove", onMouseMove);
-}
-
-/** Setup canvas to properly handle high DPI and redraw current plot. */
-function setupCanvas() {
-	const dpr = window.devicePixelRatio || 1.0;
-	const aspectRatio = canvas.width / canvas.height;
-	const size = canvas.parentNode.offsetWidth * 0.8;
-	canvas.style.width = size + "px";
-	canvas.style.height = size / aspectRatio + "px";
-	canvas.width = size;
-	canvas.height = size / aspectRatio;
-	updatePlot();
-}
-
-/** Update displayed coordinates. */
-function onMouseMove(event) {
-	if (chart) {
-		var text = "Mouse pointer is out of range";
-
-		if (event.target == canvas) {
-			let actualRect = canvas.getBoundingClientRect();
-			let logicX = event.offsetX * canvas.width / actualRect.width;
-			let logicY = event.offsetY * canvas.height / actualRect.height;
-			const point = chart.coord(logicX, logicY);
-			text = (point)
-				? `(${point.x.toFixed(3)}, ${point.y.toFixed(3)})`
-				: text;
-		}
-		coord.innerText = text;
-	}
-}
-
-/** Redraw currently selected plot. */
-function updatePlot() {
-	const selected = plotType.selectedOptions[0];
-	status.innerText = `Rendering ${selected.innerText}...`;
-	chart = null;
-	const start = performance.now();
-	switch (selected.value) {
-		case "0":
-			control.classList.add("hide");
-			chart = Chart.plot_channels();
-			break;
-		case "1":
-			control.classList.add("hide");
-			chart = Chart.plot_channels_2(Number(selected.value))
-			break;
-		default:
+	file.type
+	if (!file.type.startsWith("application/octet-stream")) {
+		showMessage("Unsupported file type. Please select a binary file.", "error");
+		return;
 	}
 
-	const end = performance.now();
-	status.innerText = `Rendered ${selected.innerText} in ${Math.ceil(end - start)}ms`;
+	// Read the file
+	const reader = new FileReader();
+	reader.readAsArrayBuffer(file);
+	reader.onload = () => {
+		fileContentDisplay.textContent = "File length bytes: " + reader.result.byteLength;
+	};
+	reader.onloadend = () => {
+		// Draw plot
+		var buffer_uint8 = new Uint8Array(reader.result);
+		Chart.plot_channels(canvas, buffer_uint8, reader.result.byteLength);
+	}
+	reader.onerror = () => {
+		showMessage("Error reading the file. Please try again.", "error");
+	};
+}
+
+// Displays a message to the user
+function showMessage(message, type) {
+	messageDisplay.textContent = message;
+	messageDisplay.style.color = type === "error" ? "red" : "green";
 }
