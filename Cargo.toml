@@ -1,8 +1,11 @@
 [package]
 name = "wasm-plot"
+description = "wasm channel plot"
 version = "0.0.0"
 edition = "2021"
 publish = false
+repository = ""
+license = ""
 
 [lib]
 crate-type = ["cdylib"]

@@ -7,7 +7,6 @@ use js_sys::Uint8Array;
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 use web_sys::HtmlCanvasElement;
 
 #[wasm_bindgen]
@@ -33,8 +32,6 @@ extern "C" {
 
 const COLORS: [RGBColor; 5] = [RED, GREEN, BLUE, CYAN, MAGENTA];
 
-//const FILE_NAME: &str = "../input-data/RPM_DATA.bin";
-
 #[wasm_bindgen]
 pub fn read_file(bytes: Uint8Array) -> Result<Vec<u16>, Error> {
     // let bytes = include_bytes!("../input-data/RPM_DATA.bin");
@@ -59,15 +56,6 @@ pub fn draw(
     bytes: Uint8Array,
     channels: usize,
 ) -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
-    let context = canvas
-        .get_context("2d")
-        .unwrap()
-        .unwrap()
-        .dyn_into::<web_sys::CanvasRenderingContext2d>()
-        .unwrap();
-
-    context.begin_path();
-
     let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
 
     let root = backend.into_drawing_area();
@@ -120,8 +108,6 @@ pub fn draw(
         .draw()?;
 
     root.present()?;
-
-    //context.stroke();
 
     return Ok(chart.into_coord_trans());
 }
