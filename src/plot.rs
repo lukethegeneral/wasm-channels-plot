@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 extern crate wasm_bindgen;
 use std::vec;
 
