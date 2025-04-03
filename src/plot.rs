@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 extern crate wasm_bindgen;
 use std::vec;
 
@@ -31,6 +32,8 @@ extern "C" {
     fn log(s: &str);
 }
 
+const COLORS: [RGBColor; 5] = [RED, GREEN, BLUE, CYAN, MAGENTA];
+
 //const FILE_NAME: &str = "../input-data/RPM_DATA.bin";
 
 #[wasm_bindgen]
@@ -56,6 +59,7 @@ pub fn read_file(bytes: Uint8Array) -> Result<Vec<u16>, Error> {
 pub fn draw(
     canvas: HtmlCanvasElement,
     bytes: Uint8Array,
+    channels: usize,
 ) -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
     let context = canvas
         .get_context("2d")
@@ -73,12 +77,12 @@ pub fn draw(
 
     let chart_data = read_file(bytes).unwrap();
     //let chart_data = vec![1234, 2345, 5678, 3271, 8822, 1234];
-    let chart_data_len = chart_data.len() / 3;
+    let chart_data_len = chart_data.len() / channels;
     let chart_data_min = chart_data.iter().min().unwrap();
     let chart_data_max = chart_data.iter().max().unwrap();
 
     let mut chart = ChartBuilder::on(&root)
-        .caption("Data channels", ("sans-serif", 50).into_font())
+        .caption("Data channels", ("sans-serif", 20).into_font())
         .margin(5)
         .x_label_area_size(30)
         .y_label_area_size(30)
@@ -89,47 +93,51 @@ pub fn draw(
 
     chart.configure_mesh().draw()?;
 
-    // Channel 0
-    chart
-        .draw_series(LineSeries::new(
-            chart_data
-                .iter()
-                .skip(0)
-                .step_by(3)
-                .enumerate()
-                .map(|(i, y)| (i as u32, *y as u32)),
-            &RED,
-        ))?
-        .label("y = ch0")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+    // Channels 0..channels
+    for (channel, color) in COLORS.iter().enumerate().filter(|x| x.0 < channels) {
+        chart
+            .draw_series(LineSeries::new(
+                chart_data
+                    .iter()
+                    .skip(channel)
+                    .step_by(3)
+                    .enumerate()
+                    .map(|(i, y)| (i as u32, *y as u32)),
+                color,
+            ))?
+            .label(format!("y = channel {}", channel))
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], color.clone()));
+    }
 
-    // Channel 1
-    chart
-        .draw_series(LineSeries::new(
-            chart_data
-                .iter()
-                .skip(1)
-                .step_by(3)
-                .enumerate()
-                .map(|(i, y)| (i as u32, *y as u32)),
-            &BLUE,
-        ))?
-        .label("y = ch1")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+    /*
+        // Channel 1
+        chart
+            .draw_series(LineSeries::new(
+                chart_data
+                    .iter()
+                    .skip(1)
+                    .step_by(3)
+                    .enumerate()
+                    .map(|(i, y)| (i as u32, *y as u32)),
+                &BLUE,
+            ))?
+            .label("y = ch1")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
 
-    // Channel 2
-    chart
-        .draw_series(LineSeries::new(
-            chart_data
-                .iter()
-                .skip(2)
-                .step_by(3)
-                .enumerate()
-                .map(|(i, y)| (i as u32, *y as u32)),
-            &GREEN,
-        ))?
-        .label("y = ch2")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREEN));
+        // Channel 2
+        chart
+            .draw_series(LineSeries::new(
+                chart_data
+                    .iter()
+                    .skip(2)
+                    .step_by(3)
+                    .enumerate()
+                    .map(|(i, y)| (i as u32, *y as u32)),
+                &GREEN,
+            ))?
+            .label("y = ch2")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &GREEN));
+    */
 
     chart
         .configure_series_labels()

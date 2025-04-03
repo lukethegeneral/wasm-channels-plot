@@ -1,6 +1,6 @@
-use js_sys::{ArrayBuffer, Uint8Array};
+use js_sys::{ArrayBuffer, Number, Uint8Array};
 use wasm_bindgen::prelude::*;
-use web_sys::HtmlCanvasElement;
+use web_sys::{HtmlCanvasElement, HtmlElement};
 
 mod plot;
 
@@ -28,8 +28,12 @@ impl Chart {
     /// Draw provided function on the canvas element using it's id.
     /// Return `Chart` struct suitable for coordinate conversion.
 
-    pub fn plot_channels(canvas: HtmlCanvasElement, bytes: Uint8Array) -> Result<Chart, JsValue> {
-        let map_coord = plot::draw(canvas, bytes).map_err(|err| err.to_string())?;
+    pub fn plot_channels(
+        canvas: HtmlCanvasElement,
+        bytes: Uint8Array,
+        channel: usize,
+    ) -> Result<Chart, JsValue> {
+        let map_coord = plot::draw(canvas, bytes, channel).map_err(|err| err.to_string())?;
         Ok(Chart {
             convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x.into(), y.into()))),
         })

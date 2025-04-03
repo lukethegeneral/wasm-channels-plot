@@ -10,12 +10,20 @@
 <body>
   <main>
     <h2>Wasm plot</h2>
+    <input type="file" id="file-input" />
+    <div id="message"></div>
+    <pre id="file-content"></pre>
     <div id="control">
-      <input type="file" id="file-input" />
-      <div id="message"></div>
-      <pre id="file-content"></pre>
+      <label for="channels">Channels: </label>
+      <select id="channels">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
     </div>
-
+    <div id="coord"></div>
     <canvas id="canvas" height="600" width="1000"></canvas>
   </main>
 

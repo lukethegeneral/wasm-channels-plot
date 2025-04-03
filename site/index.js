@@ -7,6 +7,7 @@ const canvas = document.getElementById("canvas");
 const fileInput = document.getElementById("file-input");
 const fileContentDisplay = document.getElementById("file-content");
 const messageDisplay = document.getElementById("message");
+const channelList = document.getElementById("channels");
 
 fileInput.addEventListener("change", handleFileSelection);
 
@@ -33,9 +34,10 @@ function handleFileSelection(event) {
 		fileContentDisplay.textContent = "File length bytes: " + reader.result.byteLength;
 	};
 	reader.onloadend = () => {
+		//alert(Number(channelList.value));
 		// Draw plot
 		var buffer_uint8 = new Uint8Array(reader.result);
-		Chart.plot_channels(canvas, buffer_uint8, reader.result.byteLength);
+		Chart.plot_channels(canvas, buffer_uint8, Number(channelList.value));
 	}
 	reader.onerror = () => {
 		showMessage("Error reading the file. Please try again.", "error");
