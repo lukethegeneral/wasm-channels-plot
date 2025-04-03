@@ -39,13 +39,6 @@ impl Chart {
         })
     }
 
-    pub fn plot_channels_2(power: i32) -> Result<Chart, JsValue> {
-        let map_coord = plot::draw_2(power).map_err(|err| err.to_string())?;
-        Ok(Chart {
-            convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x.into(), y.into()))),
-        })
-    }
-
     /// This function can be used to convert screen coordinates to chart coordinates.
     pub fn coord(&self, x: i32, y: i32) -> Option<Point> {
         (self.convert)((x, y)).map(|(x, y)| Point { x, y })
