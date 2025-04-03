@@ -1,5 +1,4 @@
 extern crate wasm_bindgen;
-use std::future::IntoFuture;
 use std::vec;
 
 use crate::DrawResult;
@@ -7,20 +6,9 @@ use js_sys::Error;
 use js_sys::{ArrayBuffer, Uint8Array};
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
-use std::env;
-use std::fs;
-use std::fs::File;
-use std::io::Read;
-use std::io::Seek;
-use std::io::SeekFrom;
-use wasm_bindgen::convert::FromWasmAbi;
-use wasm_bindgen::convert::IntoWasmAbi;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::{JsCast, JsValue};
-use wasmedge_wasi_helper::wasmedge_wasi_helper::_initialize;
 use web_sys::HtmlCanvasElement;
-
-use js_sys::Object;
 
 #[wasm_bindgen]
 extern "C" {
@@ -34,53 +22,8 @@ pub fn greet(text: &str) {
 
 #[wasm_bindgen(module = "/src/lib.js")]
 extern "C" {
-    type Buffer;
-
-    #[wasm_bindgen(method, getter)]
-    fn buffer(this: &Buffer) -> ArrayBuffer;
-
-    #[wasm_bindgen(method, getter, js_name = byteOffset)]
-    fn byte_offset(this: &Buffer) -> u32;
-
-    #[wasm_bindgen(method, getter)]
-    fn length(this: &Buffer) -> u32;
-
-    //#[wasm_bindgen(js_name = readFileSync)]
-    //#[wasm_bindgen()]
-    //fn read_file_js(path: &str, options: &Object) -> JsValue;
-
     fn starting() -> String;
 }
-/*
-#[wasm_bindgen(module = "/src/lib.js")]
-extern "C" {
-    #[wasm_bindgen(catch)]
-    pub fn read_file_js(path: &str) -> Result<String, JsValue>;
-}
-*/
-
-/*
-#[wasm_bindgen]
-extern "C" {
-    type Buffer;
-}
-
-//#[wasm_bindgen(module = "fs")]
-#[wasm_bindgen()]
-extern "C" {
-    #[wasm_bindgen(js_name = readFileSync, catch)]
-    fn read_file_js(path: &str) -> Result<Buffer, JsValue>;
-}
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
-}
-macro_rules! console_log {
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-}
-*/
 
 #[wasm_bindgen]
 extern "C" {
@@ -88,7 +31,7 @@ extern "C" {
     fn log(s: &str);
 }
 
-const FILE_NAME: &str = "../input-data/RPM_DATA.bin";
+//const FILE_NAME: &str = "../input-data/RPM_DATA.bin";
 
 #[wasm_bindgen]
 pub fn read_file(bytes: Uint8Array) -> Result<Vec<u16>, Error> {
@@ -110,7 +53,6 @@ pub fn read_file(bytes: Uint8Array) -> Result<Vec<u16>, Error> {
     Ok(bytes_converted)
 }
 
-//pub fn draw(canvas: HtmlCanvasElement) -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
 pub fn draw(
     canvas: HtmlCanvasElement,
     bytes: Uint8Array,
@@ -130,7 +72,6 @@ pub fn draw(
     root.fill(&YELLOW)?;
 
     let chart_data = read_file(bytes).unwrap();
-    // let chart_data = read_file(vec![12, 34, 22, 12, 45, 32, 11].as_slice()).unwrap();
     //let chart_data = vec![1234, 2345, 5678, 3271, 8822, 1234];
     let chart_data_len = chart_data.len() / 3;
     let chart_data_min = chart_data.iter().min().unwrap();

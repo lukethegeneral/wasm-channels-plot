@@ -15,9 +15,3 @@ export function read_file_js(path) {
 export function starting() {
 	return 'starting';
 }
-
-/*
-module.exports = {
-	read_file_js
-}
-*/

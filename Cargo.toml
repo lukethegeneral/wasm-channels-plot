@@ -12,9 +12,7 @@ plotters-canvas = "^0.3.0"
 js-sys = "0.3.77"
 wasm-bindgen = "0.2"
 plotters = "^0.3.2"
-wee_alloc = "0.4.5"
-wasi = "0.14.2+wasi-0.2.4"
-wasmedge-wasi-helper = "=0.2.0"
+wee_alloc = "0.4"
 
 [dependencies.web-sys]
 version = "0.3"
