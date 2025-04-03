@@ -119,3 +119,21 @@ pub fn draw(
 
     return Ok(chart.into_coord_trans());
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use wasm_bindgen_test::wasm_bindgen_test;
+    wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn test_read_file_wasm() {
+        let bytes = include_bytes!("../input-data/RPM_DATA.bin");
+        //First 3 bytes in the file: 44 09 F3 06 D1 05
+        let bytes_js = Uint8Array::new_with_length(bytes.len() as u32);
+        bytes_js.copy_from(&bytes[..]);
+        let result = read_file(bytes_js).unwrap();
+        assert_eq!(result[..3], vec![0x944, 0x6f3, 0x5d1]);
+    }
+}

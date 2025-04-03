@@ -29,5 +29,8 @@ features = [
 	'console',
 ]
 
+[dev-dependencies]
+wasm-bindgen-test = "0.3.50"
+
 [profile.release]
 lto = true

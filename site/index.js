@@ -50,7 +50,7 @@ function showMessage(message, type) {
 	messageDisplay.style.color = type === "error" ? "red" : "green";
 }
 
-channelList.addEventListener("change", () => {
+channelList.addEventListener("change", (event) => {
 	if (!file_buffer_bytes) {
 		showMessage("No file selected. Please choose a file.", "error");
 		return;

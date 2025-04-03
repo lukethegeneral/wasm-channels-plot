@@ -31,9 +31,9 @@ impl Chart {
     pub fn plot_channels(
         canvas: HtmlCanvasElement,
         bytes: Uint8Array,
-        channel: usize,
+        channels: usize,
     ) -> Result<Chart, JsValue> {
-        let map_coord = plot::draw(canvas, bytes, channel).map_err(|err| err.to_string())?;
+        let map_coord = plot::draw(canvas, bytes, channels).map_err(|err| err.to_string())?;
         Ok(Chart {
             convert: Box::new(move |coord| map_coord(coord).map(|(x, y)| (x.into(), y.into()))),
         })
