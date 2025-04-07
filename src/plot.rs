@@ -75,7 +75,8 @@ pub fn draw(
         .y_label_area_size(30)
         .build_cartesian_2d(
             0u32..chart_data_len as u32,
-            *chart_data_min as u32 - 200..*chart_data_max as u32 + 200,
+            (*chart_data_min as u32).saturating_sub(200)
+                ..(*chart_data_max as u32).saturating_add(200),
         )?;
 
     chart
