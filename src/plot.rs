@@ -56,17 +56,19 @@ pub fn draw(
     bytes: Uint8Array,
     channels: usize,
 ) -> DrawResult<impl Fn((i32, i32)) -> Option<(u32, u32)>> {
-    let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
-
-    let root = backend.into_drawing_area();
-    root.fill(&YELLOW)?;
-
     // Read converted data from file
     let chart_data = read_file(bytes).unwrap();
     //let chart_data = vec![1234, 2345, 5678, 3271, 8822, 1234, 2762, 1765, 1490];
     let chart_data_len = chart_data.len() / channels;
     let chart_data_min = chart_data.iter().min().unwrap();
     let chart_data_max = chart_data.iter().max().unwrap();
+
+    // Cannvas configuration
+    canvas.set_width(32000);
+    let backend = CanvasBackend::with_canvas_object(canvas).unwrap();
+
+    let root = backend.into_drawing_area();
+    root.fill(&YELLOW)?;
 
     let mut chart = ChartBuilder::on(&root)
         .caption("Data channels", ("sans-serif", 20).into_font())
